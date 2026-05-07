@@ -1,0 +1,450 @@
+[
+  {
+    "speciesName": "bulbasaur",
+    "pokemonId": 1
+  },
+  {
+    "speciesName": "charmander",
+    "pokemonId": 4
+  },
+  {
+    "speciesName": "squirtle",
+    "pokemonId": 7
+  },
+  {
+    "speciesName": "caterpie",
+    "pokemonId": 10
+  },
+  {
+    "speciesName": "metapod",
+    "pokemonId": 11
+  },
+  {
+    "speciesName": "weedle",
+    "pokemonId": 13
+  },
+  {
+    "speciesName": "kakuna",
+    "pokemonId": 14
+  },
+  {
+    "speciesName": "pidgey",
+    "pokemonId": 16
+  },
+  {
+    "speciesName": "pidgeotto",
+    "pokemonId": 17
+  },
+  {
+    "speciesName": "rattata",
+    "pokemonId": 19
+  },
+  {
+    "speciesName": "raticate",
+    "pokemonId": 20
+  },
+  {
+    "speciesName": "spearow",
+    "pokemonId": 21
+  },
+  {
+    "speciesName": "fearow",
+    "pokemonId": 22
+  },
+  {
+    "speciesName": "ekans",
+    "pokemonId": 23
+  },
+  {
+    "speciesName": "arbok",
+    "pokemonId": 24
+  },
+  {
+    "speciesName": "pikachu",
+    "pokemonId": 25
+  },
+  {
+    "speciesName": "sandshrew",
+    "pokemonId": 27
+  },
+  {
+    "speciesName": "sandslash",
+    "pokemonId": 28
+  },
+  {
+    "speciesName": "nidoran-f",
+    "pokemonId": 29
+  },
+  {
+    "speciesName": "nidorina",
+    "pokemonId": 30
+  },
+  {
+    "speciesName": "nidoran-m",
+    "pokemonId": 32
+  },
+  {
+    "speciesName": "nidorino",
+    "pokemonId": 33
+  },
+  {
+    "speciesName": "clefairy",
+    "pokemonId": 35
+  },
+  {
+    "speciesName": "vulpix",
+    "pokemonId": 37
+  },
+  {
+    "speciesName": "jigglypuff",
+    "pokemonId": 39
+  },
+  {
+    "speciesName": "zubat",
+    "pokemonId": 41
+  },
+  {
+    "speciesName": "golbat",
+    "pokemonId": 42
+  },
+  {
+    "speciesName": "oddish",
+    "pokemonId": 43
+  },
+  {
+    "speciesName": "gloom",
+    "pokemonId": 44
+  },
+  {
+    "speciesName": "paras",
+    "pokemonId": 46
+  },
+  {
+    "speciesName": "parasect",
+    "pokemonId": 47
+  },
+  {
+    "speciesName": "venonat",
+    "pokemonId": 48
+  },
+  {
+    "speciesName": "venomoth",
+    "pokemonId": 49
+  },
+  {
+    "speciesName": "diglett",
+    "pokemonId": 50
+  },
+  {
+    "speciesName": "dugtrio",
+    "pokemonId": 51
+  },
+  {
+    "speciesName": "meowth",
+    "pokemonId": 52
+  },
+  {
+    "speciesName": "persian",
+    "pokemonId": 53
+  },
+  {
+    "speciesName": "psyduck",
+    "pokemonId": 54
+  },
+  {
+    "speciesName": "golduck",
+    "pokemonId": 55
+  },
+  {
+    "speciesName": "mankey",
+    "pokemonId": 56
+  },
+  {
+    "speciesName": "primeape",
+    "pokemonId": 57
+  },
+  {
+    "speciesName": "growlithe",
+    "pokemonId": 58
+  },
+  {
+    "speciesName": "poliwag",
+    "pokemonId": 60
+  },
+  {
+    "speciesName": "poliwhirl",
+    "pokemonId": 61
+  },
+  {
+    "speciesName": "abra",
+    "pokemonId": 63
+  },
+  {
+    "speciesName": "kadabra",
+    "pokemonId": 64
+  },
+  {
+    "speciesName": "machop",
+    "pokemonId": 66
+  },
+  {
+    "speciesName": "machoke",
+    "pokemonId": 67
+  },
+  {
+    "speciesName": "bellsprout",
+    "pokemonId": 69
+  },
+  {
+    "speciesName": "weepinbell",
+    "pokemonId": 70
+  },
+  {
+    "speciesName": "tentacool",
+    "pokemonId": 72
+  },
+  {
+    "speciesName": "tentacruel",
+    "pokemonId": 73
+  },
+  {
+    "speciesName": "geodude",
+    "pokemonId": 74
+  },
+  {
+    "speciesName": "graveler",
+    "pokemonId": 75
+  },
+  {
+    "speciesName": "ponyta",
+    "pokemonId": 77
+  },
+  {
+    "speciesName": "rapidash",
+    "pokemonId": 78
+  },
+  {
+    "speciesName": "slowpoke",
+    "pokemonId": 79
+  },
+  {
+    "speciesName": "slowbro",
+    "pokemonId": 80
+  },
+  {
+    "speciesName": "magnemite",
+    "pokemonId": 81
+  },
+  {
+    "speciesName": "magneton",
+    "pokemonId": 82
+  },
+  {
+    "speciesName": "doduo",
+    "pokemonId": 84
+  },
+  {
+    "speciesName": "seel",
+    "pokemonId": 86
+  },
+  {
+    "speciesName": "dewgong",
+    "pokemonId": 87
+  },
+  {
+    "speciesName": "grimer",
+    "pokemonId": 88
+  },
+  {
+    "speciesName": "muk",
+    "pokemonId": 89
+  },
+  {
+    "speciesName": "shellder",
+    "pokemonId": 90
+  },
+  {
+    "speciesName": "gastly",
+    "pokemonId": 92
+  },
+  {
+    "speciesName": "haunter",
+    "pokemonId": 93
+  },
+  {
+    "speciesName": "onix",
+    "pokemonId": 95
+  },
+  {
+    "speciesName": "drowzee",
+    "pokemonId": 96
+  },
+  {
+    "speciesName": "hypno",
+    "pokemonId": 97
+  },
+  {
+    "speciesName": "krabby",
+    "pokemonId": 98
+  },
+  {
+    "speciesName": "kingler",
+    "pokemonId": 99
+  },
+  {
+    "speciesName": "voltorb",
+    "pokemonId": 100
+  },
+  {
+    "speciesName": "electrode",
+    "pokemonId": 101
+  },
+  {
+    "speciesName": "exeggcute",
+    "pokemonId": 102
+  },
+  {
+    "speciesName": "cubone",
+    "pokemonId": 104
+  },
+  {
+    "speciesName": "marowak",
+    "pokemonId": 105
+  },
+  {
+    "speciesName": "hitmonlee",
+    "pokemonId": 106
+  },
+  {
+    "speciesName": "hitmonchan",
+    "pokemonId": 107
+  },
+  {
+    "speciesName": "koffing",
+    "pokemonId": 109
+  },
+  {
+    "speciesName": "weezing",
+    "pokemonId": 110
+  },
+  {
+    "speciesName": "rhyhorn",
+    "pokemonId": 111
+  },
+  {
+    "speciesName": "chansey",
+    "pokemonId": 113
+  },
+  {
+    "speciesName": "tangela",
+    "pokemonId": 114
+  },
+  {
+    "speciesName": "kangaskhan",
+    "pokemonId": 115
+  },
+  {
+    "speciesName": "horsea",
+    "pokemonId": 116
+  },
+  {
+    "speciesName": "seadra",
+    "pokemonId": 117
+  },
+  {
+    "speciesName": "goldeen",
+    "pokemonId": 118
+  },
+  {
+    "speciesName": "seaking",
+    "pokemonId": 119
+  },
+  {
+    "speciesName": "staryu",
+    "pokemonId": 120
+  },
+  {
+    "speciesName": "scyther",
+    "pokemonId": 123
+  },
+  {
+    "speciesName": "electabuzz",
+    "pokemonId": 125
+  },
+  {
+    "speciesName": "magmar",
+    "pokemonId": 126
+  },
+  {
+    "speciesName": "pinsir",
+    "pokemonId": 127
+  },
+  {
+    "speciesName": "tauros",
+    "pokemonId": 128
+  },
+  {
+    "speciesName": "magikarp",
+    "pokemonId": 129
+  },
+  {
+    "speciesName": "gyarados",
+    "pokemonId": 130
+  },
+  {
+    "speciesName": "lapras",
+    "pokemonId": 131
+  },
+  {
+    "speciesName": "ditto",
+    "pokemonId": 132
+  },
+  {
+    "speciesName": "eevee",
+    "pokemonId": 133
+  },
+  {
+    "speciesName": "porygon",
+    "pokemonId": 137
+  },
+  {
+    "speciesName": "omanyte",
+    "pokemonId": 138
+  },
+  {
+    "speciesName": "kabuto",
+    "pokemonId": 140
+  },
+  {
+    "speciesName": "aerodactyl",
+    "pokemonId": 142
+  },
+  {
+    "speciesName": "snorlax",
+    "pokemonId": 143
+  },
+  {
+    "speciesName": "articuno",
+    "pokemonId": 144
+  },
+  {
+    "speciesName": "zapdos",
+    "pokemonId": 145
+  },
+  {
+    "speciesName": "moltres",
+    "pokemonId": 146
+  },
+  {
+    "speciesName": "dratini",
+    "pokemonId": 147
+  },
+  {
+    "speciesName": "dragonair",
+    "pokemonId": 148
+  },
+  {
+    "speciesName": "mewtwo",
+    "pokemonId": 150
+  }
+]
