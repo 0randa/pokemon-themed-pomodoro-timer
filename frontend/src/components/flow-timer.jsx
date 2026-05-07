@@ -16,8 +16,11 @@ import {
   getMuted,
   setMuted,
 } from "@/lib/victory-sound";
-import { requestNotificationPermission, sendTimerNotification } from "@/lib/notifications";
+import { TIMER_NOTIFICATION_TAGS, cancelTimerNotifications, requestNotificationPermission, scheduleTimerNotification, sendTimerNotification, supportsScheduledTimerNotifications } from "@/lib/notifications";
+import { didDeadlineExpireWhileBackgrounded, isPageBackgrounded } from "@/lib/page-attention";
 import { loadSessionData, saveSessionData } from "@/lib/session-storage";
+
+const FLOW_NOTIFICATION_TAG_LIST = [TIMER_NOTIFICATION_TAGS.flowBreak];
 
 export default function FlowTimerComp({
   breakRatio = 5,
@@ -46,6 +49,8 @@ export default function FlowTimerComp({
   const elapsedAtPause  = useRef(_st?.secondsElapsed ?? 0); // accumulated before current stint
   const breakDeadline   = useRef(null);
   const completionFired = useRef(false);
+  const backgroundedAtRef = useRef(null);
+  const breakFinishedInBackgroundRef = useRef(false);
 
   const toggleMute = () => {
     const next = !isMuted;
@@ -66,7 +71,11 @@ export default function FlowTimerComp({
 
   // Break phase: count down
   useEffect(() => {
-    if (!isRunning || phase !== "break") return;
+    if (!isRunning || phase !== "break") {
+      breakDeadline.current = null;
+      return undefined;
+    }
+
     breakDeadline.current = Date.now() + breakSecsLeft * 1000;
     const interval = setInterval(() => {
       const remaining = Math.round((breakDeadline.current - Date.now()) / 1000);
@@ -74,6 +83,87 @@ export default function FlowTimerComp({
     }, 500);
     return () => clearInterval(interval);
   }, [isRunning, phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const syncFromPageAttention = () => {
+      const now = Date.now();
+
+      if (isPageBackgrounded()) {
+        backgroundedAtRef.current ??= now;
+        return;
+      }
+
+      if (
+        isRunning &&
+        phase === "break" &&
+        didDeadlineExpireWhileBackgrounded({
+          deadlineMs: breakDeadline.current,
+          backgroundedAtMs: backgroundedAtRef.current,
+          nowMs: now,
+        })
+      ) {
+        breakFinishedInBackgroundRef.current = true;
+      }
+
+      backgroundedAtRef.current = null;
+
+      if (!isRunning || phase !== "break" || breakDeadline.current == null) return;
+
+      const remaining = Math.round((breakDeadline.current - now) / 1000);
+      setBreakSecsLeft(remaining <= 0 ? 0 : remaining);
+    };
+
+    syncFromPageAttention();
+    window.addEventListener("focus", syncFromPageAttention);
+    window.addEventListener("blur", syncFromPageAttention);
+    document.addEventListener("visibilitychange", syncFromPageAttention);
+
+    return () => {
+      window.removeEventListener("focus", syncFromPageAttention);
+      window.removeEventListener("blur", syncFromPageAttention);
+      document.removeEventListener("visibilitychange", syncFromPageAttention);
+    };
+  }, [isRunning, phase]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const syncScheduledNotification = () => {
+      if (!isRunning || phase !== "break" || breakDeadline.current == null) {
+        void cancelTimerNotifications(FLOW_NOTIFICATION_TAG_LIST);
+        return;
+      }
+
+      if (!isPageBackgrounded()) {
+        void cancelTimerNotifications(FLOW_NOTIFICATION_TAG_LIST);
+        return;
+      }
+
+      void scheduleTimerNotification({
+        tag: TIMER_NOTIFICATION_TAGS.flowBreak,
+        title: "Recovery complete!",
+        body: "You're recharged — dive back in when ready.",
+        timestamp: breakDeadline.current,
+      });
+    };
+
+    syncScheduledNotification();
+    window.addEventListener("focus", syncScheduledNotification);
+    window.addEventListener("blur", syncScheduledNotification);
+    document.addEventListener("visibilitychange", syncScheduledNotification);
+
+    return () => {
+      window.removeEventListener("focus", syncScheduledNotification);
+      window.removeEventListener("blur", syncScheduledNotification);
+      document.removeEventListener("visibilitychange", syncScheduledNotification);
+    };
+  }, [isRunning, phase]);
 
   const mm = String(Math.floor((phase === "focus" ? secondsElapsed : breakSecsLeft) / 60)).padStart(2, "0");
   const ss = String((phase === "focus" ? secondsElapsed : breakSecsLeft) % 60).padStart(2, "0");
@@ -85,11 +175,26 @@ export default function FlowTimerComp({
   // Break completion
   useEffect(() => {
     if (phase !== "break" || breakSecsLeft > 0 || !isRunning || completionFired.current) return;
+
+    const completedInBackground =
+      breakFinishedInBackgroundRef.current
+      || didDeadlineExpireWhileBackgrounded({
+        deadlineMs: breakDeadline.current,
+        backgroundedAtMs: backgroundedAtRef.current,
+      });
+    const shouldSendImmediateNotification = !completedInBackground || !supportsScheduledTimerNotifications();
+
     completionFired.current = true;
+    breakFinishedInBackgroundRef.current = false;
+    backgroundedAtRef.current = null;
+    breakDeadline.current = null;
     setIsRunning(false);
     stopBreakMusic();
-    playHealSound();
-    sendTimerNotification("Recovery complete!", "You're recharged — dive back in when ready.");
+    void cancelTimerNotifications(FLOW_NOTIFICATION_TAG_LIST);
+    if (!completedInBackground) playHealSound();
+    if (shouldSendImmediateNotification) {
+      sendTimerNotification("Recovery complete!", "You're recharged — dive back in when ready.");
+    }
     showCompletionTitle("Recovery complete! | PomoPet");
     onFlowComplete?.(secondsElapsed);
     // Reset for next session
@@ -108,8 +213,8 @@ export default function FlowTimerComp({
     });
   }, [phase, secondsElapsed, breakSecsTotal, breakSecsLeft]);
 
-  const startFocus = () => {
-    requestNotificationPermission();
+  const startFocus = async () => {
+    await requestNotificationPermission();
     onFlowStart?.();
     setIsRunning(true);
   };
@@ -142,9 +247,10 @@ export default function FlowTimerComp({
     setPhase("break");
   };
 
-  const startBreak = () => {
+  const startBreak = async () => {
     if (phase !== "break" || breakSecsLeft <= 0) return;
-    requestNotificationPermission();
+    await requestNotificationPermission();
+    breakFinishedInBackgroundRef.current = false;
     stopVictorySound();
     playBreakMusic("shortBreak");
     setIsRunning(true);
@@ -152,6 +258,10 @@ export default function FlowTimerComp({
 
   const skipBreak = () => {
     stopAllAudio();
+    breakFinishedInBackgroundRef.current = false;
+    backgroundedAtRef.current = null;
+    breakDeadline.current = null;
+    void cancelTimerNotifications(FLOW_NOTIFICATION_TAG_LIST);
     playHealSound();
     setIsRunning(false);
     completionFired.current = true;
@@ -167,6 +277,9 @@ export default function FlowTimerComp({
   const resetFlow = () => {
     stopAllAudio();
     setIsRunning(false);
+    backgroundedAtRef.current = null;
+    breakFinishedInBackgroundRef.current = false;
+    void cancelTimerNotifications(FLOW_NOTIFICATION_TAG_LIST);
     setPhase("focus");
     setSecondsElapsed(0);
     elapsedAtPause.current = 0;

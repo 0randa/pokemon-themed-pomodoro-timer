@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useTimerTabTitle } from "@/hooks/use-timer-tab-title";
 import { playVictorySound, stopVictorySound, playBreakMusic, pauseBreakMusic, resumeBreakMusic, stopBreakMusic, stopAllAudio, playHealSound, getMuted, setMuted } from "@/lib/victory-sound";
-import { requestNotificationPermission, sendTimerNotification } from "@/lib/notifications";
+import { TIMER_NOTIFICATION_TAGS, cancelTimerNotifications, requestNotificationPermission, scheduleTimerNotification, sendTimerNotification, supportsScheduledTimerNotifications } from "@/lib/notifications";
+import { didDeadlineExpireWhileBackgrounded, isPageBackgrounded } from "@/lib/page-attention";
 import { loadSessionData, saveSessionData } from "@/lib/session-storage";
 
 const TEST_FOCUS_SECS = 2;
 const TEST_BREAK_SECS = 1;
+const POMODORO_NOTIFICATION_TAG_LIST = [
+  TIMER_NOTIFICATION_TAGS.pomodoroFocus,
+  TIMER_NOTIFICATION_TAGS.pomodoroBreak,
+];
 
 export default function TimerComp({
   focusMinutes = 25,
@@ -51,6 +56,8 @@ export default function TimerComp({
   const [isMuted, setIsMuted]         = useState(() => getMuted());
   const completionFired = useRef(false);
   const didMount = useRef(false);
+  const backgroundedAtRef = useRef(null);
+  const completedInBackgroundRef = useRef(false);
 
   const toggleMute = () => {
     const next = !isMuted;
@@ -92,7 +99,11 @@ export default function TimerComp({
   const deadlineRef = useRef(null);
 
   useEffect(() => {
-    if (!isRunning) return undefined;
+    if (!isRunning) {
+      deadlineRef.current = null;
+      return undefined;
+    }
+
     deadlineRef.current = Date.now() + secondsLeft * 1000;
     const interval = setInterval(() => {
       const remaining = Math.round((deadlineRef.current - Date.now()) / 1000);
@@ -100,6 +111,96 @@ export default function TimerComp({
     }, 500);
     return () => clearInterval(interval);
   }, [isRunning]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const syncFromPageAttention = () => {
+      const now = Date.now();
+
+      if (isPageBackgrounded()) {
+        backgroundedAtRef.current ??= now;
+        return;
+      }
+
+      if (
+        isRunning &&
+        didDeadlineExpireWhileBackgrounded({
+          deadlineMs: deadlineRef.current,
+          backgroundedAtMs: backgroundedAtRef.current,
+          nowMs: now,
+        })
+      ) {
+        completedInBackgroundRef.current = true;
+      }
+
+      backgroundedAtRef.current = null;
+
+      if (!isRunning || deadlineRef.current == null) return;
+
+      const remaining = Math.round((deadlineRef.current - now) / 1000);
+      setSecondsLeft(remaining <= 0 ? 0 : remaining);
+    };
+
+    syncFromPageAttention();
+    window.addEventListener("focus", syncFromPageAttention);
+    window.addEventListener("blur", syncFromPageAttention);
+    document.addEventListener("visibilitychange", syncFromPageAttention);
+
+    return () => {
+      window.removeEventListener("focus", syncFromPageAttention);
+      window.removeEventListener("blur", syncFromPageAttention);
+      document.removeEventListener("visibilitychange", syncFromPageAttention);
+    };
+  }, [isRunning]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const syncScheduledNotification = () => {
+      if (!isRunning || deadlineRef.current == null) {
+        void cancelTimerNotifications(POMODORO_NOTIFICATION_TAG_LIST);
+        return;
+      }
+
+      if (!isPageBackgrounded()) {
+        void cancelTimerNotifications(POMODORO_NOTIFICATION_TAG_LIST);
+        return;
+      }
+
+      const scheduledNotification = mode === "focus"
+        ? {
+            tag: TIMER_NOTIFICATION_TAGS.pomodoroFocus,
+            title: "Focus session complete!",
+            body: "Great work, Trainer! Time to take a break.",
+          }
+        : {
+            tag: TIMER_NOTIFICATION_TAGS.pomodoroBreak,
+            title: "Break's over!",
+            body: "You're healed up — time to get back to it.",
+          };
+
+      void scheduleTimerNotification({
+        ...scheduledNotification,
+        timestamp: deadlineRef.current,
+      });
+    };
+
+    syncScheduledNotification();
+    window.addEventListener("focus", syncScheduledNotification);
+    window.addEventListener("blur", syncScheduledNotification);
+    document.addEventListener("visibilitychange", syncScheduledNotification);
+
+    return () => {
+      window.removeEventListener("focus", syncScheduledNotification);
+      window.removeEventListener("blur", syncScheduledNotification);
+      document.removeEventListener("visibilitychange", syncScheduledNotification);
+    };
+  }, [isRunning, mode]);
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
@@ -113,20 +214,37 @@ export default function TimerComp({
       return;
     }
     if (!isRunning || completionFired.current) return;
+
+    const completedInBackground =
+      completedInBackgroundRef.current
+      || didDeadlineExpireWhileBackgrounded({
+        deadlineMs: deadlineRef.current,
+        backgroundedAtMs: backgroundedAtRef.current,
+      });
+    const shouldSendImmediateNotification = !completedInBackground || !supportsScheduledTimerNotifications();
+
     completionFired.current = true;
+    completedInBackgroundRef.current = false;
+    backgroundedAtRef.current = null;
+    deadlineRef.current = null;
     setIsRunning(false);
+    void cancelTimerNotifications(POMODORO_NOTIFICATION_TAG_LIST);
 
     if (mode === "focus") {
       playVictorySound();
-      sendTimerNotification("Focus session complete!", "Great work, Trainer! Time to take a break.");
+      if (shouldSendImmediateNotification) {
+        sendTimerNotification("Focus session complete!", "Great work, Trainer! Time to take a break.");
+      }
       showCompletionTitle("Focus complete! | PomoPet");
       setPomodoroCount((c) => c + 1);
       setCanStartBreak(true);
       onPomodoroComplete?.();
     } else {
       stopBreakMusic();
-      playHealSound();
-      sendTimerNotification("Break's over!", "You're healed up — time to get back to it.");
+      if (!completedInBackground) playHealSound();
+      if (shouldSendImmediateNotification) {
+        sendTimerNotification("Break's over!", "You're healed up — time to get back to it.");
+      }
       showCompletionTitle("Break over! | PomoPet");
       if (mode === "longBreak") setPomodoroCount(0);
       setMode("focus");
@@ -146,6 +264,7 @@ export default function TimerComp({
 
   const startBreak = (type) => {
     stopVictorySound();
+    completedInBackgroundRef.current = false;
     const breakMode = type === "long" ? "longBreak" : "shortBreak";
     setMode(breakMode);
     setSecondsLeft(type === "long" ? longBreakSecs : shortBreakSecs);
@@ -155,7 +274,7 @@ export default function TimerComp({
     setIsRunning(true);
   };
 
-  const toggleTimer = () => {
+  const toggleTimer = async () => {
     if (isRunning) {
       setIsRunning(false);
       if (mode !== "focus") pauseBreakMusic();
@@ -164,7 +283,8 @@ export default function TimerComp({
     if (mode === "focus" && canStartBreak) { startBreak(isLongBreakDue ? "long" : "short"); return; }
     if (mode !== "focus") { resumeBreakMusic(); }
     if (mode === "focus" && (secondsLeft === focusSecs || secondsLeft === 0)) { onPomodoroStart?.(); }
-    requestNotificationPermission();
+    completedInBackgroundRef.current = false;
+    await requestNotificationPermission();
     setIsRunning(true);
   };
 
@@ -172,6 +292,10 @@ export default function TimerComp({
     stopAllAudio();
     setIsRunning(false);
     completionFired.current = true;
+    completedInBackgroundRef.current = false;
+    backgroundedAtRef.current = null;
+    deadlineRef.current = null;
+    void cancelTimerNotifications(POMODORO_NOTIFICATION_TAG_LIST);
     if (mode === "focus") {
       const elapsed = focusSecs - secondsLeft;
       const ratio = focusSecs > 0 ? elapsed / focusSecs : 0;
@@ -191,6 +315,10 @@ export default function TimerComp({
   const resetTimer = () => {
     stopAllAudio();
     setIsRunning(false);
+    backgroundedAtRef.current = null;
+    completedInBackgroundRef.current = false;
+    deadlineRef.current = null;
+    void cancelTimerNotifications(POMODORO_NOTIFICATION_TAG_LIST);
     setMode("focus");
     setCanStartBreak(false);
     setSecondsLeft(focusSecs);
