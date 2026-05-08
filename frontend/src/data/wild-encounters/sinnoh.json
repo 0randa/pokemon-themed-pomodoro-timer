@@ -136,14 +136,6 @@
     "pokemonId": 130
   },
   {
-    "speciesName": "eevee",
-    "pokemonId": 133
-  },
-  {
-    "speciesName": "porygon",
-    "pokemonId": 137
-  },
-  {
     "speciesName": "hoothoot",
     "pokemonId": 163
   },
@@ -320,18 +312,6 @@
     "pokemonId": 361
   },
   {
-    "speciesName": "turtwig",
-    "pokemonId": 387
-  },
-  {
-    "speciesName": "chimchar",
-    "pokemonId": 390
-  },
-  {
-    "speciesName": "piplup",
-    "pokemonId": 393
-  },
-  {
     "speciesName": "starly",
     "pokemonId": 396
   },
@@ -424,10 +404,6 @@
     "pokemonId": 444
   },
   {
-    "speciesName": "riolu",
-    "pokemonId": 447
-  },
-  {
     "speciesName": "hippopotas",
     "pokemonId": 449
   },
@@ -468,10 +444,6 @@
     "pokemonId": 480
   },
   {
-    "speciesName": "mesprit",
-    "pokemonId": 481
-  },
-  {
     "speciesName": "azelf",
     "pokemonId": 482
   },
@@ -486,9 +458,5 @@
   {
     "speciesName": "giratina",
     "pokemonId": 487
-  },
-  {
-    "speciesName": "manaphy",
-    "pokemonId": 490
   }
 ]

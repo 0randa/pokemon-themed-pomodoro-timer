@@ -172,18 +172,6 @@
     "pokemonId": 231
   },
   {
-    "speciesName": "treecko",
-    "pokemonId": 252
-  },
-  {
-    "speciesName": "torchic",
-    "pokemonId": 255
-  },
-  {
-    "speciesName": "mudkip",
-    "pokemonId": 258
-  },
-  {
     "speciesName": "poochyena",
     "pokemonId": 261
   },
@@ -404,20 +392,8 @@
     "pokemonId": 344
   },
   {
-    "speciesName": "lileep",
-    "pokemonId": 345
-  },
-  {
-    "speciesName": "anorith",
-    "pokemonId": 347
-  },
-  {
     "speciesName": "feebas",
     "pokemonId": 349
-  },
-  {
-    "speciesName": "castform",
-    "pokemonId": 351
   },
   {
     "speciesName": "kecleon",
@@ -474,10 +450,6 @@
   {
     "speciesName": "bagon",
     "pokemonId": 371
-  },
-  {
-    "speciesName": "beldum",
-    "pokemonId": 374
   },
   {
     "speciesName": "regirock",

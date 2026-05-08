@@ -384,10 +384,6 @@
     "pokemonId": 419
   },
   {
-    "speciesName": "drifloon",
-    "pokemonId": 425
-  },
-  {
     "speciesName": "drifblim",
     "pokemonId": 426
   },
@@ -454,18 +450,6 @@
   {
     "speciesName": "mamoswine",
     "pokemonId": 473
-  },
-  {
-    "speciesName": "snivy",
-    "pokemonId": 495
-  },
-  {
-    "speciesName": "tepig",
-    "pokemonId": 498
-  },
-  {
-    "speciesName": "oshawott",
-    "pokemonId": 501
   },
   {
     "speciesName": "patrat",
@@ -670,10 +654,6 @@
   {
     "speciesName": "garbodor",
     "pokemonId": 569
-  },
-  {
-    "speciesName": "zorua",
-    "pokemonId": 570
   },
   {
     "speciesName": "minccino",

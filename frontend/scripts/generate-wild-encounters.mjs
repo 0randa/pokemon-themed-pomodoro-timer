@@ -62,12 +62,32 @@ async function speciesEntries(pokedexSlug) {
     .filter((e) => e.speciesId !== null);
 }
 
+// "Wild" encounter methods only — excludes gift, gift-egg, trade, fossil-revive,
+// pokemon-transfer, etc., which PokeAPI also reports under /encounters.
+const WILD_METHODS = new Set([
+  "walk", "surf", "old-rod", "good-rod", "super-rod",
+  "rock-smash", "headbutt", "dark-grass", "grass-spots",
+  "cave-spots", "bridge-spots", "super-rod-spots", "surf-spots",
+  "yellow-flowers", "purple-flowers", "red-flowers",
+  "rough-terrain", "seaweed", "tall-grass", "long-grass",
+  "shaking-grass", "dust-cloud", "rippling-water",
+  "fishing-spots", "swarm", "horde-encounter",
+  "only-grass-in-shoal-cave", "gift-pokeradar",
+  "feebas-tile-fishing",
+  // Static one-time wild encounters (legendaries in overworld, Union Cave Lapras, etc.)
+  "only-one",
+]);
+
 async function isWildEncounterable(speciesId, versionSet) {
   // /pokemon/{speciesId}/encounters returns encounters for the default form.
   const encounters = await fetchJson(`${POKEAPI}/pokemon/${speciesId}/encounters`);
   if (!encounters) return false;
   return encounters.some((loc) =>
-    loc.version_details.some((vd) => versionSet.has(vd.version.name)),
+    loc.version_details.some(
+      (vd) =>
+        versionSet.has(vd.version.name) &&
+        vd.encounter_details.some((ed) => WILD_METHODS.has(ed.method.name)),
+    ),
   );
 }
 

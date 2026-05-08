@@ -1,17 +1,5 @@
 [
   {
-    "speciesName": "bulbasaur",
-    "pokemonId": 1
-  },
-  {
-    "speciesName": "charmander",
-    "pokemonId": 4
-  },
-  {
-    "speciesName": "squirtle",
-    "pokemonId": 7
-  },
-  {
     "speciesName": "caterpie",
     "pokemonId": 10
   },
@@ -312,14 +300,6 @@
     "pokemonId": 105
   },
   {
-    "speciesName": "hitmonlee",
-    "pokemonId": 106
-  },
-  {
-    "speciesName": "hitmonchan",
-    "pokemonId": 107
-  },
-  {
     "speciesName": "koffing",
     "pokemonId": 109
   },
@@ -398,30 +378,6 @@
   {
     "speciesName": "ditto",
     "pokemonId": 132
-  },
-  {
-    "speciesName": "eevee",
-    "pokemonId": 133
-  },
-  {
-    "speciesName": "porygon",
-    "pokemonId": 137
-  },
-  {
-    "speciesName": "omanyte",
-    "pokemonId": 138
-  },
-  {
-    "speciesName": "kabuto",
-    "pokemonId": 140
-  },
-  {
-    "speciesName": "aerodactyl",
-    "pokemonId": 142
-  },
-  {
-    "speciesName": "snorlax",
-    "pokemonId": 143
   },
   {
     "speciesName": "articuno",

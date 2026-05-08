@@ -1,17 +1,5 @@
 [
   {
-    "speciesName": "bulbasaur",
-    "pokemonId": 1
-  },
-  {
-    "speciesName": "charmander",
-    "pokemonId": 4
-  },
-  {
-    "speciesName": "squirtle",
-    "pokemonId": 7
-  },
-  {
     "speciesName": "caterpie",
     "pokemonId": 10
   },
@@ -412,18 +400,6 @@
     "pokemonId": 132
   },
   {
-    "speciesName": "eevee",
-    "pokemonId": 133
-  },
-  {
-    "speciesName": "porygon",
-    "pokemonId": 137
-  },
-  {
-    "speciesName": "snorlax",
-    "pokemonId": 143
-  },
-  {
     "speciesName": "articuno",
     "pokemonId": 144
   },
@@ -446,18 +422,6 @@
   {
     "speciesName": "mewtwo",
     "pokemonId": 150
-  },
-  {
-    "speciesName": "chikorita",
-    "pokemonId": 152
-  },
-  {
-    "speciesName": "cyndaquil",
-    "pokemonId": 155
-  },
-  {
-    "speciesName": "totodile",
-    "pokemonId": 158
   },
   {
     "speciesName": "sentret",
@@ -500,10 +464,6 @@
     "pokemonId": 171
   },
   {
-    "speciesName": "togepi",
-    "pokemonId": 175
-  },
-  {
     "speciesName": "natu",
     "pokemonId": 177
   },
@@ -518,10 +478,6 @@
   {
     "speciesName": "marill",
     "pokemonId": 183
-  },
-  {
-    "speciesName": "sudowoodo",
-    "pokemonId": 185
   },
   {
     "speciesName": "hoppip",
@@ -652,20 +608,8 @@
     "pokemonId": 235
   },
   {
-    "speciesName": "tyrogue",
-    "pokemonId": 236
-  },
-  {
     "speciesName": "miltank",
     "pokemonId": 241
-  },
-  {
-    "speciesName": "raikou",
-    "pokemonId": 243
-  },
-  {
-    "speciesName": "entei",
-    "pokemonId": 244
   },
   {
     "speciesName": "suicune",
