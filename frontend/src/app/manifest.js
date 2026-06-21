@@ -1,3 +1,7 @@
+// Required under `output: "export"`: forces the /manifest.webmanifest metadata
+// route to be statically generated instead of treated as a dynamic route.
+export const dynamic = "force-static";
+
 export default function manifest() {
   return {
     name: "PomoPet",
