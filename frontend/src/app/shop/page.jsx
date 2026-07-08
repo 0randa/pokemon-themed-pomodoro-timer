@@ -44,7 +44,7 @@ export default function ShopPage() {
   useEffect(() => {
     if (loading) return;
     if (user) {
-      Promise.all([loadUserProgress(), loadInventory()]).then(
+      Promise.all([loadUserProgress(), loadInventory(user.id)]).then(
         ([progress, inv]) => {
           setPokedollars(progress.pokedollars ?? 0);
           setTotalXp(progress.totalXp ?? 0);
@@ -96,13 +96,14 @@ export default function ShopPage() {
     if (user) {
       await Promise.all([
         saveUserProgress({
+          userId: user.id,
           activePokemon,
           totalXp,
           pomodorosCompleted,
           pokedollars: newBal,
           regionId,
         }),
-        saveInventoryItem(item.id, newQty),
+        saveInventoryItem(item.id, newQty, user.id),
       ]);
     } else {
       const saved = loadGuestData() ?? {};

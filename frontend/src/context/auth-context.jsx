@@ -10,11 +10,21 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get the initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Get the initial session. On a cold start the network can be slow or
+    // unreachable and getSession() may reject — catch it so the app still
+    // renders (loading resolves) instead of hanging on a blank screen and
+    // leaking an unhandled "Failed to fetch" rejection.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     // Listen for auth state changes (login, logout, token refresh)
     const {

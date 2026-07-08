@@ -71,7 +71,7 @@ export default function AccountPage() {
       setSavingActive(true);
       setError("");
       try {
-        await saveUserProgress({ activePokemon: pokemon, totalXp, pomodorosCompleted });
+        await saveUserProgress({ userId: user.id, activePokemon: pokemon, totalXp, pomodorosCompleted });
       } catch (e) {
         setError(e?.message ?? "Could not update active Pokémon.");
       } finally {

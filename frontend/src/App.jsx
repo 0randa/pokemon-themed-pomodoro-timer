@@ -135,7 +135,7 @@ export default function App() {
     setProgressLoaded(false);
 
     if (user) {
-      Promise.all([loadUserProgress(), loadInventory()]).then(
+      Promise.all([loadUserProgress(), loadInventory(user.id)]).then(
         ([{
           activePokemon: ap,
           totalXp: xp,
@@ -173,7 +173,7 @@ export default function App() {
     if (!progressLoaded) return;
 
     if (user) {
-      saveUserProgress({ activePokemon, totalXp, pomodorosCompleted, pokedollars, regionId: selectedRegion });
+      saveUserProgress({ userId: user.id, activePokemon, totalXp, pomodorosCompleted, pokedollars, regionId: selectedRegion });
     } else {
       const existingGuestData = loadGuestData() ?? {};
       saveGuestData({
@@ -243,9 +243,10 @@ export default function App() {
               speciesName: p.speciesName,
               storageIndex: (p.storageIndex ?? 0) + 1,
             })),
+            user.id,
           );
         }
-        addCaughtPokemon(previewStarterData, { storageIndex: 0 });
+        addCaughtPokemon(previewStarterData, { storageIndex: 0, userId: user.id });
       }
     }
 
@@ -288,7 +289,7 @@ export default function App() {
 
     const nextCaught = [...caughtPokemon, caught];
     setCaughtPokemon(nextCaught);
-    if (user) addCaughtPokemon(caught, { storageIndex: nextCaught.length - 1 });
+    if (user) addCaughtPokemon(caught, { storageIndex: nextCaught.length - 1, userId: user.id });
   };
 
   const handleSetCaughtActive = () => {
@@ -329,6 +330,7 @@ export default function App() {
               speciesName: p.speciesName,
               storageIndex: p.storageIndex,
             })),
+          user.id,
         );
       }
     }
@@ -375,7 +377,7 @@ export default function App() {
         ? inventory.filter((i) => i.itemId !== itemId)
         : inventory.map((i) => i.itemId === itemId ? { ...i, quantity: newQuantity } : i);
       setInventory(newInventory);
-      if (user) saveInventoryItem(itemId, newQuantity);
+      if (user) saveInventoryItem(itemId, newQuantity, user.id);
     } else {
       // Level-based evolution
       if (typeof nextEvolution.minLevel !== "number") {

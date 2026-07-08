@@ -76,12 +76,13 @@ export async function loadUserProgress() {
   };
 }
 
-export async function addCaughtPokemon(pokemon, { storageIndex } = {}) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+export async function addCaughtPokemon(pokemon, { storageIndex, userId } = {}) {
+  // userId comes from the auth context — avoids a network-bound getUser() call
+  // that also contends for the Supabase auth lock on cold start.
+  if (!userId) return;
 
   await supabase.from("caught_pokemon").insert({
-    user_id: user.id,
+    user_id: userId,
     pokemon_id: pokemon.pokemonId,
     species_name: pokemon.speciesName,
     label: pokemon.label,
@@ -89,14 +90,13 @@ export async function addCaughtPokemon(pokemon, { storageIndex } = {}) {
   });
 }
 
-export async function reorderCaughtPokemon(order) {
+export async function reorderCaughtPokemon(order, userId) {
   // order: [{ id, speciesName, storageIndex }]
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!userId) return;
   const rows = (order ?? [])
     .filter((entry) => entry && typeof entry.storageIndex === "number")
     .map((entry) => ({
-      user_id: user.id,
+      user_id: userId,
       ...(entry.id ? { id: entry.id } : {}),
       species_name: entry.speciesName,
       storage_index: entry.storageIndex,
@@ -110,6 +110,7 @@ export async function reorderCaughtPokemon(order) {
 }
 
 export async function saveUserProgress({
+  userId,
   activePokemon,
   totalXp,
   pomodorosCompleted,
@@ -121,15 +122,14 @@ export async function saveUserProgress({
   lastCheckinDate,
   longestStreak,
 }) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!userId) return;
 
   const promises = [];
 
   if (activePokemon) {
     promises.push(
       supabase.from("profiles").upsert({
-        id: user.id,
+        id: userId,
         starter_key: activePokemon.key,
         starter_pokemon_id: activePokemon.pokemonId,
         starter_label: activePokemon.label,
@@ -140,7 +140,7 @@ export async function saveUserProgress({
   }
 
   const progressRow = {
-    id: user.id,
+    id: userId,
     total_xp: totalXp,
     pomodoros_completed: pomodorosCompleted,
     pokedollars: pokedollars ?? 0,
@@ -161,27 +161,25 @@ export async function saveUserProgress({
 
 // ── Inventory (shop items) ──────────────────────────────────────────────────
 
-export async function loadInventory() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+export async function loadInventory(userId) {
+  if (!userId) return [];
 
   const { data } = await supabase
     .from("inventory")
     .select("item_id, quantity")
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   return (data ?? []).map((row) => ({ itemId: row.item_id, quantity: row.quantity }));
 }
 
-export async function saveInventoryItem(itemId, quantity) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+export async function saveInventoryItem(itemId, quantity, userId) {
+  if (!userId) return;
 
   if (quantity <= 0) {
-    await supabase.from("inventory").delete().eq("user_id", user.id).eq("item_id", itemId);
+    await supabase.from("inventory").delete().eq("user_id", userId).eq("item_id", itemId);
   } else {
     await supabase.from("inventory").upsert(
-      { user_id: user.id, item_id: itemId, quantity },
+      { user_id: userId, item_id: itemId, quantity },
       { onConflict: "user_id,item_id" },
     );
   }

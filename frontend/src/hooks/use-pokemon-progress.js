@@ -4,12 +4,9 @@ import {
   MAX_LEVEL,
   START_LEVEL,
   calculateLevelFromExperience,
-  formatPokemonName,
   getExperienceForLevel,
-  getNextEvolutionEntry,
-  getPokemonIdFromResourceUrl,
 } from "@/lib/pokemon";
-import { getRequiredItem } from "@/lib/shop";
+import { loadGrowthData } from "@/lib/pokeapi";
 
 export function usePokemonProgress({ activePokemon, totalXp }) {
   const [growthLevels, setGrowthLevels] = useState([]);
@@ -29,104 +26,30 @@ export function usePokemonProgress({ activePokemon, totalXp }) {
     let isActive = true;
     const abortController = new AbortController();
 
-    const loadGrowthData = async () => {
+    const load = async () => {
       setIsGrowthDataLoading(true);
       setGrowthDataError("");
       setNextEvolution(null);
 
       try {
-        const speciesResponse = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${activePokemon.pokemonId}`,
+        const { levels, nextEvolution: evolution } = await loadGrowthData(
+          activePokemon.pokemonId,
           { signal: abortController.signal },
         );
-        if (!speciesResponse.ok) {
-          throw new Error(`Species request failed: ${speciesResponse.status}`);
-        }
 
-        const speciesData = await speciesResponse.json();
-        const growthRateUrl = speciesData.growth_rate?.url;
-        if (!growthRateUrl) {
-          throw new Error("Growth rate URL is missing from species response.");
-        }
+        if (!isActive) return;
 
-        const evolutionChainUrl = speciesData.evolution_chain?.url;
-        if (!evolutionChainUrl) {
-          throw new Error("Evolution chain URL is missing from species response.");
-        }
-
-        const [growthRateResponse, evolutionChainResponse] = await Promise.all([
-          fetch(growthRateUrl, {
-            signal: abortController.signal,
-          }),
-          fetch(evolutionChainUrl, {
-            signal: abortController.signal,
-          }),
-        ]);
-
-        if (!growthRateResponse.ok) {
-          throw new Error(`Growth rate request failed: ${growthRateResponse.status}`);
-        }
-        if (!evolutionChainResponse.ok) {
-          throw new Error(`Evolution chain request failed: ${evolutionChainResponse.status}`);
-        }
-
-        const [growthRateData, evolutionChainData] = await Promise.all([
-          growthRateResponse.json(),
-          evolutionChainResponse.json(),
-        ]);
-
-        const normalizedLevels = (growthRateData.levels ?? [])
-          .map((levelEntry) => ({
-            level: levelEntry.level,
-            experience: levelEntry.experience,
-          }))
-          .sort((left, right) => left.level - right.level);
-
-        if (!normalizedLevels.length) {
-          throw new Error("Growth rate table is empty.");
-        }
-
-        if (!isActive) {
-          return;
-        }
-
-        setGrowthLevels(normalizedLevels);
-
-        const nextEvolutionEntry = getNextEvolutionEntry(
-          evolutionChainData.chain,
-          speciesData.name,
-        );
-        if (!nextEvolutionEntry) {
-          setNextEvolution(null);
-          return;
-        }
-
-        const pokemonId = getPokemonIdFromResourceUrl(
-          nextEvolutionEntry.candidate.species?.url,
-        );
-        if (!pokemonId) {
-          setNextEvolution(null);
-          return;
-        }
-
-        const requiredShopItem = getRequiredItem(nextEvolutionEntry.evolutionDetails ?? []);
-
-        setNextEvolution({
-          pokemonId,
-          speciesName: nextEvolutionEntry.candidate.species.name,
-          label: formatPokemonName(nextEvolutionEntry.candidate.species.name),
-          minLevel: nextEvolutionEntry.minLevel,
-          trigger: nextEvolutionEntry.trigger,
-          item: nextEvolutionEntry.item,
-          minHappiness: nextEvolutionEntry.minHappiness,
-          requiredShopItem,
-        });
+        setGrowthLevels(levels);
+        setNextEvolution(evolution);
       } catch (error) {
-        if (!isActive || error.name === "AbortError") {
+        if (!isActive || error?.name === "AbortError") {
           return;
         }
 
-        console.error("Could not load growth data from PokeAPI:", error);
+        // Transient blips are already retried inside loadGrowthData; reaching
+        // here means a persistent failure. Warn (not error) so it doesn't trip
+        // the dev error overlay, and fall back to the local leveling curve.
+        console.warn("Could not load growth data from PokeAPI:", error);
         setGrowthLevels([]);
         setNextEvolution(null);
         setGrowthDataError("Could not load PokeAPI growth data. Using fallback leveling.");
@@ -137,7 +60,7 @@ export function usePokemonProgress({ activePokemon, totalXp }) {
       }
     };
 
-    loadGrowthData();
+    load();
 
     return () => {
       isActive = false;

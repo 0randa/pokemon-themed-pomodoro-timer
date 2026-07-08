@@ -77,11 +77,11 @@ export function CheckinProvider({ children }) {
     setLastCheckinDate(today);
     setLongestStreak(newLongest);
 
-    // Persist to Supabase
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (u) {
+    // Persist to Supabase using the context user — avoids a network-bound
+    // getUser() call that also contends for the Supabase auth lock.
+    if (user) {
       await supabase.from("progress").upsert({
-        id: u.id,
+        id: user.id,
         streak: newStreak,
         last_streak_date: today,
         shields_available: newShields,
@@ -97,7 +97,7 @@ export function CheckinProvider({ children }) {
         detail: { xp: CHECKIN_XP, pokedollars: CHECKIN_POKEDOLLARS },
       })
     );
-  }, [streak, lastStreakDate, shieldsAvailable, lastCheckinDate, longestStreak]);
+  }, [streak, lastStreakDate, shieldsAvailable, lastCheckinDate, longestStreak, user]);
 
   const activateShield = useCallback(async () => {
     const today = todayStr();
@@ -109,16 +109,15 @@ export function CheckinProvider({ children }) {
     setShieldsAvailable(newShields);
     setLastStreakDate(yesterday);
 
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (u) {
+    if (user) {
       await supabase.from("progress").upsert({
-        id: u.id,
+        id: user.id,
         shields_available: newShields,
         last_streak_date: yesterday,
         updated_at: new Date().toISOString(),
       });
     }
-  }, [shieldsAvailable, lastStreakDate]);
+  }, [shieldsAvailable, lastStreakDate, user]);
 
   const value = {
     streak,

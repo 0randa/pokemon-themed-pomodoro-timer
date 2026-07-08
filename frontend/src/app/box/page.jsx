@@ -79,6 +79,7 @@ export default function BoxPage() {
           normalized
             .filter((p) => p?.id)
             .map((p) => ({ id: p.id, speciesName: p.speciesName, storageIndex: p.storageIndex })),
+          user.id,
         );
       } else {
         const existing = loadGuestData() ?? {};
@@ -96,7 +97,7 @@ export default function BoxPage() {
     setActivePokemon(pokemon);
     if (user) {
       try {
-        await saveUserProgress({ activePokemon: pokemon, totalXp, pomodorosCompleted });
+        await saveUserProgress({ userId: user.id, activePokemon: pokemon, totalXp, pomodorosCompleted });
       } catch (e) {
         setSaveError(e?.message ?? "Could not update active Pokémon.");
       }
